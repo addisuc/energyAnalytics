@@ -1,0 +1,30 @@
+# Build outputs
+target/
+*.jar
+*.war
+
+# Frontend
+node_modules/
+frontend/dist/
+frontend/.angular/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Terraform
+.terraform/
+*.tfstate*
+.terraform.lock.hcl
+
+# Logs
+*.log
+
+# Environment
+.env
+terraform.tfvars
