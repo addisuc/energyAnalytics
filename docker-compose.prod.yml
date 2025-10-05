@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  timescaledb:
+    image: timescale/timescaledb:latest-pg15
+    container_name: weather-timescaledb
+    environment:
+      POSTGRES_DB: weatherdb
+      POSTGRES_USER: weather_user
+      POSTGRES_PASSWORD: weather_pass_prod
+    volumes:
+      - timescale_data:/var/lib/postgresql/data
+    networks:
+      - weather-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: weather-redis
+    volumes:
+      - redis_data:/data
+    networks:
+      - weather-network
+    restart: unless-stopped
+
+  weather-app:
+    image: openjdk:17-jre-slim
+    container_name: weather-app
+    volumes:
+      - ./weather-service-1.0.0.jar:/app/weather-service.jar
+    working_dir: /app
+    command: java -jar weather-service.jar
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://timescaledb:5432/weatherdb
+      - SPRING_DATASOURCE_USERNAME=weather_user
+      - SPRING_DATASOURCE_PASSWORD=weather_pass_prod
+      - SPRING_REDIS_HOST=redis
+      - OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY}
+    depends_on:
+      - timescaledb
+      - redis
+    networks:
+      - weather-network
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: weather-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./frontend/dist:/usr/share/nginx/html
+    depends_on:
+      - weather-app
+    networks:
+      - weather-network
+    restart: unless-stopped
+
+volumes:
+  timescale_data:
+  redis_data:
+
+networks:
+  weather-network:
+    driver: bridge

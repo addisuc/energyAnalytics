@@ -1,0 +1,262 @@
+<div class="visualizations-container">
+  <div class="visualizations-header">
+    <h1 class="page-title">Advanced Visualizations</h1>
+    <p class="page-subtitle">Interactive dashboards with real-time data streaming and custom analytics</p>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls-section">
+    <div class="control-group">
+      <label for="visualization-select">Visualization Type:</label>
+      <select id="visualization-select" [(ngModel)]="selectedVisualization" (change)="onVisualizationChange()">
+        <option *ngFor="let viz of visualizations" [value]="viz.value">{{ viz.label }}</option>
+      </select>
+    </div>
+    
+    <div class="control-group">
+      <label for="region-select">Region:</label>
+      <select id="region-select" [(ngModel)]="selectedRegion" (change)="onRegionChange()">
+        <option *ngFor="let region of regions" [value]="region.value">{{ region.label }}</option>
+      </select>
+    </div>
+    
+    <div class="control-group" *ngIf="selectedVisualization === 'realtime'">
+      <label>Real-time Streaming:</label>
+      <div class="streaming-controls">
+        <button class="stream-button start" (click)="startRealTimeStreaming()" [disabled]="isStreaming">
+          <i class="material-icons">play_arrow</i>
+          Start Stream
+        </button>
+        <button class="stream-button stop" (click)="stopRealTimeStreaming()" [disabled]="!isStreaming">
+          <i class="material-icons">stop</i>
+          Stop Stream
+        </button>
+        <div class="stream-status" [class.active]="isStreaming">
+          <i class="material-icons">{{ isStreaming ? 'radio_button_checked' : 'radio_button_unchecked' }}</i>
+          {{ isStreaming ? 'Streaming' : 'Stopped' }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Real-time Streaming Chart -->
+  <div class="chart-section" *ngIf="selectedVisualization === 'realtime'">
+    <div class="chart-header">
+      <h2>Real-time Energy Efficiency Monitoring</h2>
+      <button class="export-button" (click)="exportChart('realtime')">
+        <i class="material-icons">download</i>
+        Export PNG
+      </button>
+    </div>
+    <div class="chart-container">
+      <canvas #realtimeChart></canvas>
+    </div>
+    <div class="chart-info">
+      <div class="info-item">
+        <span class="info-label">Update Frequency:</span>
+        <span class="info-value">2 seconds</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Data Points:</span>
+        <span class="info-value">{{ realtimeData.length }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Current Value:</span>
+        <span class="info-value">{{ (realtimeData[realtimeData.length - 1] || 0) | number:'1.1-1' }}%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Regional Comparison Chart -->
+  <div class="chart-section" *ngIf="selectedVisualization === 'regional'">
+    <div class="chart-header">
+      <h2>Regional Performance Radar</h2>
+      <button class="export-button" (click)="exportChart('regional')">
+        <i class="material-icons">download</i>
+        Export PNG
+      </button>
+    </div>
+    <div class="chart-container">
+      <canvas #regionChart></canvas>
+    </div>
+    <div class="chart-info">
+      <div class="info-item">
+        <span class="info-label">Metrics:</span>
+        <span class="info-value">6 performance indicators</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Regions:</span>
+        <span class="info-value">3 active regions</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Scale:</span>
+        <span class="info-value">0-100%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Historical Trends Chart -->
+  <div class="chart-section" *ngIf="selectedVisualization === 'trends'">
+    <div class="chart-header">
+      <h2>Annual Energy Trends</h2>
+      <button class="export-button" (click)="exportChart('trends')">
+        <i class="material-icons">download</i>
+        Export PNG
+      </button>
+    </div>
+    <div class="chart-container">
+      <canvas #trendChart></canvas>
+    </div>
+    <div class="chart-info">
+      <div class="info-item">
+        <span class="info-label">Time Period:</span>
+        <span class="info-value">12 months</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Data Sources:</span>
+        <span class="info-value">Solar, Wind, Consumption</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Trend Analysis:</span>
+        <span class="info-value">Seasonal patterns visible</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Performance Heatmap -->
+  <div class="chart-section" *ngIf="selectedVisualization === 'heatmap'">
+    <div class="chart-header">
+      <h2>24-Hour Performance Heatmap</h2>
+      <button class="export-button" (click)="exportChart('heatmap')">
+        <i class="material-icons">download</i>
+        Export PNG
+      </button>
+    </div>
+    <div class="chart-container">
+      <canvas #heatmapChart></canvas>
+    </div>
+    <div class="chart-info">
+      <div class="info-item">
+        <span class="info-label">Time Resolution:</span>
+        <span class="info-value">Hourly</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Color Coding:</span>
+        <span class="info-value">Green (High), Yellow (Medium), Red (Low)</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Peak Hours:</span>
+        <span class="info-value">10:00-14:00</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Geospatial Analysis Map -->
+  <div class="chart-section" *ngIf="selectedVisualization === 'geomap'">
+    <div class="chart-header">
+      <h2>Geospatial Energy Facilities Map</h2>
+      <button class="export-button" (click)="exportChart('geomap')">
+        <i class="material-icons">download</i>
+        Export PNG
+      </button>
+    </div>
+    <div class="chart-container">
+      <canvas #geomapChart></canvas>
+    </div>
+    <div class="chart-info">
+      <div class="info-item">
+        <span class="info-label">Coverage Area:</span>
+        <span class="info-value">Continental US</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Facility Types:</span>
+        <span class="info-value">Solar, Wind, Gas, Hydro</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Data Points:</span>
+        <span class="info-value">8 major facilities</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Efficiency Range:</span>
+        <span class="info-value">78% - 95%</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Visualization Features -->
+  <div class="features-section">
+    <h2 class="section-title">Visualization Features</h2>
+    
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="material-icons">timeline</i>
+        </div>
+        <h3>Real-time Streaming</h3>
+        <p>Live data updates every 2 seconds with smooth animations and automatic scaling.</p>
+        <ul>
+          <li>WebSocket integration</li>
+          <li>Automatic data buffering</li>
+          <li>Configurable update intervals</li>
+        </ul>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="material-icons">dashboard</i>
+        </div>
+        <h3>Pre-built Chart Library</h3>
+        <p>Professional visualization suite with 5 optimized chart types for energy analytics.</p>
+        <ul>
+          <li>Real-time streaming charts</li>
+          <li>Regional radar comparisons</li>
+          <li>Historical trend analysis</li>
+          <li>Performance heatmaps</li>
+          <li>Geospatial facility maps</li>
+        </ul>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="material-icons">trending_up</i>
+        </div>
+        <h3>Trend Analysis</h3>
+        <p>Historical trend visualization with seasonal pattern recognition.</p>
+        <ul>
+          <li>Multi-year data support</li>
+          <li>Seasonal adjustments</li>
+          <li>Predictive overlays</li>
+        </ul>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="material-icons">grid_on</i>
+        </div>
+        <h3>Performance Heatmaps</h3>
+        <p>Color-coded performance visualization for pattern identification.</p>
+        <ul>
+          <li>Hourly granularity</li>
+          <li>Custom color schemes</li>
+          <li>Interactive tooltips</li>
+        </ul>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="material-icons">map</i>
+        </div>
+        <h3>Geospatial Analysis</h3>
+        <p>Geographic distribution of energy facilities with efficiency mapping.</p>
+        <ul>
+          <li>Continental US coverage</li>
+          <li>Facility type classification</li>
+          <li>Efficiency-based sizing</li>
+          <li>Interactive coordinate system</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+
+</div>

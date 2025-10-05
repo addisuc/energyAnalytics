@@ -1,0 +1,47 @@
+.map-container {
+  margin: 20px 0;
+  padding: 20px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.map-container h3 {
+  margin: 0 0 10px 0;
+  color: #2d3436;
+}
+
+.map-container p {
+  margin: 0 0 15px 0;
+  color: #636e72;
+}
+
+.weather-map {
+  height: 500px;
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+}
+
+.loading-indicator {
+  margin: 15px 0;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #0984e3, #74b9ff);
+  transition: width 0.3s ease;
+}

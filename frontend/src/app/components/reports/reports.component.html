@@ -1,0 +1,206 @@
+<div class="reports-container">
+  <div class="reports-header">
+    <h1 class="page-title">Reports & Export</h1>
+    <p class="page-subtitle">Generate comprehensive energy analytics reports and schedule automated delivery</p>
+  </div>
+
+  <!-- Report Generation Section -->
+  <div class="generation-section">
+    <h2 class="section-title">Generate Report</h2>
+    
+    <div class="generation-form">
+      <div class="form-controls">
+        <div class="control-group">
+          <label for="region-select">Region:</label>
+          <select id="region-select" [(ngModel)]="selectedRegion">
+            <option *ngFor="let region of regions" [value]="region.value">{{ region.label }}</option>
+          </select>
+        </div>
+        
+        <div class="control-group">
+          <label for="template-select">Report Template:</label>
+          <select id="template-select" [(ngModel)]="selectedTemplate">
+            <option *ngFor="let template of templates" [value]="template.id">{{ template.name }}</option>
+          </select>
+        </div>
+        
+        <div class="control-group">
+          <label for="period-select">Time Period:</label>
+          <select id="period-select" [(ngModel)]="selectedPeriod">
+            <option *ngFor="let period of periods" [value]="period.value">{{ period.label }}</option>
+          </select>
+        </div>
+        
+        <div class="control-group">
+          <label for="format-select">Format:</label>
+          <select id="format-select" [(ngModel)]="selectedFormat">
+            <option *ngFor="let format of formats" [value]="format.value">{{ format.label }}</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="action-buttons">
+        <button class="generate-button" (click)="generateReport()" [disabled]="isGenerating">
+          <i class="material-icons">{{ isGenerating ? 'hourglass_empty' : 'assessment' }}</i>
+          {{ isGenerating ? 'Generating...' : 'Generate Report' }}
+        </button>
+        
+        <button class="download-button" (click)="downloadReport()" [disabled]="!generatedReport">
+          <i class="material-icons">download</i>
+          Download {{ selectedFormat }}
+        </button>
+        
+        <button class="schedule-button" (click)="showScheduleForm = true">
+          <i class="material-icons">schedule</i>
+          Schedule Report
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Report Templates Section -->
+  <div class="templates-section" *ngIf="templates.length > 0">
+    <h2 class="section-title">Available Templates</h2>
+    
+    <div class="templates-grid">
+      <div class="template-card" *ngFor="let template of templates" 
+           [class.selected]="selectedTemplate === template.id"
+           (click)="selectedTemplate = template.id">
+        <div class="template-header">
+          <h3>{{ template.name }}</h3>
+          <div class="template-time">{{ template.estimatedTime }}</div>
+        </div>
+        <p class="template-description">{{ template.description }}</p>
+        <div class="template-formats">
+          <span class="format-tag" *ngFor="let format of template.formats">{{ format }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Schedule Form -->
+  <div class="schedule-form" *ngIf="showScheduleForm">
+    <div class="form-header">
+      <h2>Schedule Automated Reports</h2>
+      <button class="close-button" (click)="resetScheduleForm()">
+        <i class="material-icons">close</i>
+      </button>
+    </div>
+    
+    <form (ngSubmit)="scheduleReport()">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="schedule-template">Report Template</label>
+          <select id="schedule-template" [(ngModel)]="scheduleData.reportType" name="reportType">
+            <option *ngFor="let template of templates" [value]="template.id">{{ template.name }}</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="schedule-region">Region</label>
+          <select id="schedule-region" [(ngModel)]="scheduleData.region" name="region">
+            <option *ngFor="let region of regions" [value]="region.value">{{ region.label }}</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="schedule-frequency">Frequency</label>
+          <select id="schedule-frequency" [(ngModel)]="scheduleData.frequency" name="frequency">
+            <option *ngFor="let freq of frequencies" [value]="freq.value">{{ freq.label }}</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="schedule-format">Format</label>
+          <select id="schedule-format" [(ngModel)]="scheduleData.format" name="format">
+            <option *ngFor="let format of formats" [value]="format.value">{{ format.label }}</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="schedule-recipients">Email Recipients (comma-separated)</label>
+        <input id="schedule-recipients" type="email" [(ngModel)]="scheduleData.recipients" 
+               name="recipients" placeholder="user@company.com, manager@company.com" multiple>
+      </div>
+      
+      <div class="form-actions">
+        <button type="button" class="cancel-button" (click)="resetScheduleForm()">Cancel</button>
+        <button type="submit" class="submit-button">Schedule Report</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading report templates...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="error-container">
+    <div class="error-icon">
+      <i class="material-icons">error_outline</i>
+    </div>
+    <h3>Error</h3>
+    <p>{{ error }}</p>
+    <button class="retry-button" (click)="loadTemplates()">
+      <i class="material-icons">refresh</i>
+      Try Again
+    </button>
+  </div>
+
+  <!-- Generated Report Preview -->
+  <div class="report-preview" *ngIf="generatedReport && !isGenerating">
+    <h2 class="section-title">Report Preview</h2>
+    
+    <div class="preview-card">
+      <div class="report-header">
+        <h3>{{ getTemplateById(selectedTemplate)?.name || 'Energy Report' }}</h3>
+        <div class="report-meta">
+          <span>Region: {{ selectedRegion | titlecase }}</span>
+          <span>Period: {{ selectedPeriod }} days</span>
+          <span>Generated: {{ generatedReport.generatedAt | date:'short' }}</span>
+        </div>
+      </div>
+      
+      <div class="report-summary" *ngIf="generatedReport.summary">
+        <h4>Executive Summary</h4>
+        <div class="summary-grid">
+          <div class="summary-item">
+            <span class="summary-label">Performance Rating:</span>
+            <span class="summary-value" [class]="getPerformanceColor(generatedReport.summary.performanceRating)">
+              {{ generatedReport.summary.performanceRating }}
+            </span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Current Efficiency:</span>
+            <span class="summary-value">{{ generatedReport.summary.currentEfficiency | number:'1.1-1' }}%</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Risk Level:</span>
+            <span class="summary-value" [class]="getRiskColor(generatedReport.summary.riskLevel)">
+              {{ generatedReport.summary.riskLevel }}
+            </span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="report-recommendations" *ngIf="generatedReport.recommendations">
+        <h4>Key Recommendations</h4>
+        <ul class="recommendations-list">
+          <li *ngFor="let recommendation of generatedReport.recommendations">
+            {{ recommendation }}
+          </li>
+        </ul>
+      </div>
+      
+      <div class="report-actions">
+        <button class="download-button" (click)="downloadReport()">
+          <i class="material-icons">download</i>
+          Download {{ selectedFormat }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,237 @@
+<div class="alerts-container">
+  <div class="alerts-header">
+    <h1 class="page-title">Alert Management</h1>
+    <p class="page-subtitle">Create and manage custom threshold alerts for energy metrics</p>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="statistics-section" *ngIf="statistics">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i class="material-icons">notifications</i>
+        </div>
+        <div class="stat-content">
+          <h3>Total Alerts</h3>
+          <div class="stat-value">{{ statistics.totalAlerts }}</div>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i class="material-icons">notifications_active</i>
+        </div>
+        <div class="stat-content">
+          <h3>Active Alerts</h3>
+          <div class="stat-value">{{ statistics.activeAlerts }}</div>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">
+          <i class="material-icons">history</i>
+        </div>
+        <div class="stat-content">
+          <h3>Recent Triggers</h3>
+          <div class="stat-value">{{ statistics.recentTriggers?.length || 0 }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="action-section">
+    <button class="create-button" (click)="showCreateForm = true" *ngIf="!showCreateForm">
+      <i class="material-icons">add</i>
+      Create New Alert
+    </button>
+  </div>
+
+  <!-- Create/Edit Alert Form -->
+  <div class="alert-form" *ngIf="showCreateForm">
+    <div class="form-header">
+      <h2>{{ editingAlert ? 'Edit Alert' : 'Create New Alert' }}</h2>
+      <button class="close-button" (click)="resetForm()">
+        <i class="material-icons">close</i>
+      </button>
+    </div>
+    
+    <form (ngSubmit)="editingAlert ? updateAlert() : createAlert()">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="alert-name">Alert Name</label>
+          <input 
+            id="alert-name"
+            type="text" 
+            [(ngModel)]="editingAlert ? editingAlert.name : newAlert.name"
+            name="name"
+            placeholder="Enter alert name"
+            required>
+        </div>
+        
+        <div class="form-group">
+          <label for="region">Region</label>
+          <select 
+            id="region"
+            [(ngModel)]="editingAlert ? editingAlert.region : newAlert.region"
+            name="region">
+            <option *ngFor="let region of regions" [value]="region.value">
+              {{ region.label }}
+            </option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="alert-type">Alert Type</label>
+          <select 
+            id="alert-type"
+            [(ngModel)]="editingAlert ? editingAlert.alertType : newAlert.alertType"
+            name="alertType">
+            <option *ngFor="let type of alertTypes" [value]="type.value">
+              {{ type.label }}
+            </option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="threshold-operator">Condition</label>
+          <select 
+            id="threshold-operator"
+            [(ngModel)]="editingAlert ? editingAlert.thresholdOperator : newAlert.thresholdOperator"
+            name="thresholdOperator">
+            <option *ngFor="let op of operators" [value]="op.value">
+              {{ op.label }}
+            </option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="threshold-value">Threshold Value</label>
+          <input 
+            id="threshold-value"
+            type="number" 
+            [(ngModel)]="editingAlert ? editingAlert.thresholdValue : newAlert.thresholdValue"
+            name="thresholdValue"
+            placeholder="Enter threshold value"
+            step="0.1"
+            required>
+        </div>
+        
+        <div class="form-group">
+          <label for="notification-method">Notification Method</label>
+          <select 
+            id="notification-method"
+            [(ngModel)]="editingAlert ? editingAlert.notificationMethod : newAlert.notificationMethod"
+            name="notificationMethod">
+            <option *ngFor="let method of notificationMethods" [value]="method.value">
+              {{ method.label }}
+            </option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-group" *ngIf="(editingAlert?.notificationMethod || newAlert.notificationMethod) === 'WEBHOOK'">
+        <label for="webhook-url">Webhook URL</label>
+        <input 
+          id="webhook-url"
+          type="url" 
+          [(ngModel)]="editingAlert ? editingAlert.webhookUrl : newAlert.webhookUrl"
+          name="webhookUrl"
+          placeholder="https://your-webhook-url.com/alerts">
+      </div>
+      
+      <div class="form-actions">
+        <button type="button" class="cancel-button" (click)="resetForm()">Cancel</button>
+        <button type="submit" class="submit-button">
+          {{ editingAlert ? 'Update Alert' : 'Create Alert' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Loading alerts...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="error-container">
+    <div class="error-icon">
+      <i class="material-icons">error_outline</i>
+    </div>
+    <h3>Error Loading Alerts</h3>
+    <p>{{ error }}</p>
+    <button class="retry-button" (click)="loadAlerts()">
+      <i class="material-icons">refresh</i>
+      Try Again
+    </button>
+  </div>
+
+  <!-- Alerts List -->
+  <div class="alerts-list" *ngIf="!isLoading && !error">
+    <h2 class="section-title">Your Alerts</h2>
+    
+    <div class="empty-state" *ngIf="alerts.length === 0">
+      <div class="empty-icon">
+        <i class="material-icons">notifications_none</i>
+      </div>
+      <h3>No Alerts Created</h3>
+      <p>Create your first alert to get notified when energy metrics exceed your thresholds.</p>
+      <button class="create-button" (click)="showCreateForm = true">
+        <i class="material-icons">add</i>
+        Create Your First Alert
+      </button>
+    </div>
+    
+    <div class="alerts-grid" *ngIf="alerts.length > 0">
+      <div class="alert-card" *ngFor="let alert of alerts">
+        <div class="alert-header">
+          <div class="alert-name">{{ alert.name }}</div>
+          <div class="alert-status" [class]="getStatusColor(alert.isActive)">
+            <i class="material-icons">{{ alert.isActive ? 'notifications_active' : 'notifications_off' }}</i>
+            {{ alert.isActive ? 'Active' : 'Inactive' }}
+          </div>
+        </div>
+        
+        <div class="alert-details">
+          <div class="detail-row">
+            <span class="detail-label">Type:</span>
+            <span class="detail-value">{{ getAlertTypeLabel(alert.alertType) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Region:</span>
+            <span class="detail-value">{{ alert.region | titlecase }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Condition:</span>
+            <span class="detail-value">{{ getOperatorLabel(alert.thresholdOperator) }} {{ formatThreshold(alert) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Notification:</span>
+            <span class="detail-value">{{ alert.notificationMethod }}</span>
+          </div>
+          <div class="detail-row" *ngIf="alert.lastTriggered">
+            <span class="detail-label">Last Triggered:</span>
+            <span class="detail-value">{{ alert.lastTriggered | date:'short' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Trigger Count:</span>
+            <span class="detail-value">{{ alert.triggerCount }}</span>
+          </div>
+        </div>
+        
+        <div class="alert-actions">
+          <button class="edit-button" (click)="editAlert(alert)">
+            <i class="material-icons">edit</i>
+            Edit
+          </button>
+          <button class="delete-button" (click)="deleteAlert(alert.id)">
+            <i class="material-icons">delete</i>
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

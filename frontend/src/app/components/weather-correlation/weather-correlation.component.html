@@ -1,0 +1,298 @@
+<div class="weather-correlation-container">
+  <!-- Header Section -->
+  <div class="correlation-header">
+    <div class="header-content">
+      <h1 class="page-title">Weather-Energy Correlation</h1>
+      <p class="page-subtitle">Analyze the relationship between weather patterns and energy generation</p>
+    </div>
+    
+    <div class="header-controls">
+      <!-- Region Selector -->
+      <div class="control-group">
+        <label for="region-select" class="control-label">Region:</label>
+        <select 
+          id="region-select"
+          [(ngModel)]="selectedRegion" 
+          (change)="onRegionChange()"
+          class="control-select"
+          [disabled]="isLoading">
+          <option *ngFor="let region of availableRegions" [value]="region.value">
+            {{ region.label }}
+          </option>
+        </select>
+      </div>
+      
+      <!-- Time Range Selector -->
+      <div class="control-group">
+        <label for="time-select" class="control-label">Time Range:</label>
+        <select 
+          id="time-select"
+          [(ngModel)]="selectedTimeRange" 
+          (change)="onTimeRangeChange()"
+          class="control-select"
+          [disabled]="isLoading">
+          <option *ngFor="let range of timeRanges" [value]="range.value">
+            {{ range.label }}
+          </option>
+        </select>
+      </div>
+      
+      <!-- Refresh Button -->
+      <button 
+        class="refresh-button"
+        (click)="refreshData()"
+        [disabled]="isLoading">
+        <i class="material-icons" [class.spinning]="isLoading">refresh</i>
+        <span class="button-text">Refresh</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading && !correlationData" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p class="loading-text">Analyzing weather-energy correlations...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !correlationData" class="error-container">
+    <div class="error-icon">
+      <i class="material-icons">error_outline</i>
+    </div>
+    <h3 class="error-title">Unable to Load Correlation Data</h3>
+    <p class="error-message">{{ error }}</p>
+    <button class="retry-button" (click)="refreshData()">
+      <i class="material-icons">refresh</i>
+      Try Again
+    </button>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="correlationData" class="correlation-content">
+    
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <div class="status-item">
+        <span class="status-label">Last Updated:</span>
+        <span class="status-value">{{ getTimeSinceUpdate() }}</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">Analysis Period:</span>
+        <span class="status-value">{{ correlationData.timeRange }}</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">Data Points:</span>
+        <span class="status-value">{{ correlationData.correlations.length }}</span>
+      </div>
+    </div>
+
+    <!-- Current Weather & Energy -->
+    <div class="current-conditions" *ngIf="getCurrentWeather() as current">
+      <h2 class="section-title">Current Conditions</h2>
+      <div class="conditions-grid">
+        
+        <!-- Weather Card -->
+        <div class="condition-card weather-card">
+          <div class="card-header">
+            <h3 class="card-title">Weather</h3>
+            <i class="card-icon material-icons">wb_sunny</i>
+          </div>
+          <div class="card-content">
+            <div class="metric-row">
+              <span class="metric-label">Temperature:</span>
+              <span class="metric-value">{{ formatNumber(current.weatherData.temperature) }}°C</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Wind Speed:</span>
+              <span class="metric-value">{{ formatNumber(current.weatherData.windSpeed) }} m/s</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Solar Irradiance:</span>
+              <span class="metric-value">{{ formatNumber(current.weatherData.solarIrradiance, 0) }} W/m²</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Cloud Cover:</span>
+              <span class="metric-value">{{ formatNumber(current.weatherData.cloudCover, 0) }}%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Energy Generation Card -->
+        <div class="condition-card energy-card">
+          <div class="card-header">
+            <h3 class="card-title">Energy Generation</h3>
+            <i class="card-icon material-icons">bolt</i>
+          </div>
+          <div class="card-content">
+            <div class="metric-row">
+              <span class="metric-label">Solar Generation:</span>
+              <span class="metric-value">{{ formatNumber(current.solarGeneration) }} MW</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Wind Generation:</span>
+              <span class="metric-value">{{ formatNumber(current.windGeneration) }} MW</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Total Consumption:</span>
+              <span class="metric-value">{{ formatNumber(current.totalConsumption) }} MW</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Net Balance:</span>
+              <span class="metric-value" 
+                   [class]="(current.solarGeneration + current.windGeneration - current.totalConsumption) > 0 ? 'text-green-600' : 'text-red-600'">
+                {{ formatNumber(current.solarGeneration + current.windGeneration - current.totalConsumption) }} MW
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Correlation Analysis -->
+    <div class="correlation-analysis">
+      <h2 class="section-title">Correlation Analysis</h2>
+      <div class="correlation-grid">
+        
+        <!-- Temperature vs Consumption -->
+        <div class="correlation-card">
+          <div class="correlation-header">
+            <h3 class="correlation-title">Temperature vs Consumption</h3>
+            <span class="correlation-coefficient" 
+                  [class]="getCorrelationColor(getAverageCorrelation('temperatureVsConsumption'))">
+              {{ formatNumber(getAverageCorrelation('temperatureVsConsumption'), 3) }}
+            </span>
+          </div>
+          <div class="correlation-body">
+            <div class="correlation-strength" 
+                 [class]="getCorrelationColor(getAverageCorrelation('temperatureVsConsumption'))">
+              {{ getCorrelationStrength(getAverageCorrelation('temperatureVsConsumption')) }}
+            </div>
+            <div class="correlation-description">
+              Higher temperatures typically increase energy consumption due to cooling demands.
+            </div>
+            <div class="correlation-bar">
+              <div class="bar-fill" 
+                   [style.width.%]="Math.abs(getAverageCorrelation('temperatureVsConsumption')) * 100"
+                   [class]="getCorrelationColor(getAverageCorrelation('temperatureVsConsumption'))">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Wind Speed vs Wind Generation -->
+        <div class="correlation-card">
+          <div class="correlation-header">
+            <h3 class="correlation-title">Wind Speed vs Wind Generation</h3>
+            <span class="correlation-coefficient" 
+                  [class]="getCorrelationColor(getAverageCorrelation('windSpeedVsWindGeneration'))">
+              {{ formatNumber(getAverageCorrelation('windSpeedVsWindGeneration'), 3) }}
+            </span>
+          </div>
+          <div class="correlation-body">
+            <div class="correlation-strength" 
+                 [class]="getCorrelationColor(getAverageCorrelation('windSpeedVsWindGeneration'))">
+              {{ getCorrelationStrength(getAverageCorrelation('windSpeedVsWindGeneration')) }}
+            </div>
+            <div class="correlation-description">
+              Wind generation increases exponentially with wind speed up to cut-off limits.
+            </div>
+            <div class="correlation-bar">
+              <div class="bar-fill" 
+                   [style.width.%]="Math.abs(getAverageCorrelation('windSpeedVsWindGeneration')) * 100"
+                   [class]="getCorrelationColor(getAverageCorrelation('windSpeedVsWindGeneration'))">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Solar Irradiance vs Solar Generation -->
+        <div class="correlation-card">
+          <div class="correlation-header">
+            <h3 class="correlation-title">Solar Irradiance vs Solar Generation</h3>
+            <span class="correlation-coefficient" 
+                  [class]="getCorrelationColor(getAverageCorrelation('solarIrradianceVsSolarGeneration'))">
+              {{ formatNumber(getAverageCorrelation('solarIrradianceVsSolarGeneration'), 3) }}
+            </span>
+          </div>
+          <div class="correlation-body">
+            <div class="correlation-strength" 
+                 [class]="getCorrelationColor(getAverageCorrelation('solarIrradianceVsSolarGeneration'))">
+              {{ getCorrelationStrength(getAverageCorrelation('solarIrradianceVsSolarGeneration')) }}
+            </div>
+            <div class="correlation-description">
+              Solar generation directly correlates with available solar irradiance.
+            </div>
+            <div class="correlation-bar">
+              <div class="bar-fill" 
+                   [style.width.%]="Math.abs(getAverageCorrelation('solarIrradianceVsSolarGeneration')) * 100"
+                   [class]="getCorrelationColor(getAverageCorrelation('solarIrradianceVsSolarGeneration'))">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cloud Cover vs Solar Generation -->
+        <div class="correlation-card">
+          <div class="correlation-header">
+            <h3 class="correlation-title">Cloud Cover vs Solar Generation</h3>
+            <span class="correlation-coefficient" 
+                  [class]="getCorrelationColor(getAverageCorrelation('cloudCoverVsSolarGeneration'))">
+              {{ formatNumber(getAverageCorrelation('cloudCoverVsSolarGeneration'), 3) }}
+            </span>
+          </div>
+          <div class="correlation-body">
+            <div class="correlation-strength" 
+                 [class]="getCorrelationColor(getAverageCorrelation('cloudCoverVsSolarGeneration'))">
+              {{ getCorrelationStrength(getAverageCorrelation('cloudCoverVsSolarGeneration')) }}
+            </div>
+            <div class="correlation-description">
+              Increased cloud cover reduces solar generation capacity.
+            </div>
+            <div class="correlation-bar">
+              <div class="bar-fill" 
+                   [style.width.%]="Math.abs(getAverageCorrelation('cloudCoverVsSolarGeneration')) * 100"
+                   [class]="getCorrelationColor(getAverageCorrelation('cloudCoverVsSolarGeneration'))">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary Insights -->
+    <div class="insights-section">
+      <h2 class="section-title">Key Insights</h2>
+      <div class="insights-grid">
+        <div class="insight-card">
+          <div class="insight-icon">
+            <i class="material-icons">trending_up</i>
+          </div>
+          <div class="insight-content">
+            <h3 class="insight-title">Strongest Correlation</h3>
+            <p class="insight-text">{{ correlationData.summary.strongestCorrelation }}</p>
+          </div>
+        </div>
+        
+        <div class="insight-card">
+          <div class="insight-icon">
+            <i class="material-icons">trending_down</i>
+          </div>
+          <div class="insight-content">
+            <h3 class="insight-title">Weakest Correlation</h3>
+            <p class="insight-text">{{ correlationData.summary.weakestCorrelation }}</p>
+          </div>
+        </div>
+        
+        <div class="insight-card">
+          <div class="insight-icon">
+            <i class="material-icons">speed</i>
+          </div>
+          <div class="insight-content">
+            <h3 class="insight-title">Average Efficiency</h3>
+            <p class="insight-text">{{ formatNumber(correlationData.summary.averageEfficiency) }}% overall system efficiency</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

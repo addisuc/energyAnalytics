@@ -1,0 +1,211 @@
+<div class="api-docs-container">
+  <div class="api-docs-header">
+    <h1 class="page-title">API Documentation</h1>
+    <p class="page-subtitle">Comprehensive REST API for energy analytics integration</p>
+  </div>
+
+  <!-- API Overview -->
+  <div class="overview-section" *ngIf="apiInfo">
+    <h2 class="section-title">API Overview</h2>
+    
+    <div class="overview-grid">
+      <div class="overview-card">
+        <div class="card-header">
+          <h3>{{ apiInfo.platform }}</h3>
+          <span class="version-badge">{{ apiInfo.version }}</span>
+        </div>
+        <p class="card-description">{{ apiInfo.description }}</p>
+        <div class="card-links">
+          <a [href]="apiInfo.baseUrl" target="_blank" class="link-button">
+            <i class="material-icons">link</i>
+            API Base URL
+          </a>
+          <button class="link-button" (click)="openSwaggerUI()">
+            <i class="material-icons">description</i>
+            Swagger UI
+          </button>
+        </div>
+      </div>
+      
+      <div class="status-card" *ngIf="apiStatus">
+        <h3>API Status</h3>
+        <div class="status-item">
+          <span class="status-label">Status:</span>
+          <span class="status-value" [class]="getStatusColor(apiStatus.status)">
+            {{ apiStatus.status | titlecase }}
+          </span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Uptime:</span>
+          <span class="status-value">{{ apiStatus.uptime }}</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Response Time:</span>
+          <span class="status-value">{{ apiStatus.averageResponseTime }}</span>
+        </div>
+        <div class="status-item">
+          <span class="status-label">Active Users:</span>
+          <span class="status-value">{{ apiStatus.metrics?.activeUsers }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- API Categories -->
+  <div class="categories-section" *ngIf="apiInfo?.categories">
+    <h2 class="section-title">API Categories</h2>
+    
+    <div class="categories-grid">
+      <div class="category-card" *ngFor="let category of apiInfo.categories | keyvalue">
+        <div class="category-header">
+          <h3>{{ $any(category.key) | titlecase }}</h3>
+        </div>
+        <p class="category-description">{{ $any(category.value).description }}</p>
+        <div class="endpoints-list">
+          <div class="endpoint" *ngFor="let endpoint of $any(category.value).endpoints">
+            <code>{{ endpoint }}</code>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rate Limits -->
+  <div class="rate-limits-section" *ngIf="apiInfo?.rateLimits">
+    <h2 class="section-title">Rate Limits by Subscription</h2>
+    
+    <div class="rate-limits-grid">
+      <div class="rate-limit-card" *ngFor="let limit of apiInfo.rateLimits | keyvalue" 
+           [class]="getRateLimitColor($any(limit.key))">
+        <div class="plan-header">
+          <h3>{{ limit.key }}</h3>
+          <span class="plan-badge">{{ limit.key === 'FREE' ? '$0' : (limit.key === 'BASIC' ? '$29' : (limit.key === 'PRO' ? '$99' : '$299')) }}/month</span>
+        </div>
+        <div class="limit-details">
+          <div class="limit-item">
+            <span class="limit-label">Per Minute:</span>
+            <span class="limit-value">{{ $any(limit.value).requestsPerMinute }} requests</span>
+          </div>
+          <div class="limit-item">
+            <span class="limit-label">Per Day:</span>
+            <span class="limit-value">{{ $any(limit.value).requestsPerDay === 'unlimited' ? 'Unlimited' : $any(limit.value).requestsPerDay + ' requests' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Authentication -->
+  <div class="auth-section" *ngIf="apiInfo?.authentication">
+    <h2 class="section-title">Authentication</h2>
+    
+    <div class="auth-card">
+      <div class="auth-info">
+        <h3>Bearer Token Authentication</h3>
+        <p>All API requests require a valid JWT token in the Authorization header.</p>
+        
+        <div class="auth-example">
+          <h4>Header Format:</h4>
+          <div class="code-block">
+            <code>{{ apiInfo.authentication.header }}</code>
+            <button class="copy-button" (click)="copyToClipboard(apiInfo.authentication.header)">
+              <i class="material-icons">content_copy</i>
+            </button>
+          </div>
+        </div>
+        
+        <div class="auth-endpoint">
+          <h4>Get Token:</h4>
+          <div class="code-block">
+            <code>POST {{ apiInfo.authentication.tokenEndpoint }}</code>
+            <button class="copy-button" (click)="copyToClipboard('POST ' + apiInfo.authentication.tokenEndpoint)">
+              <i class="material-icons">content_copy</i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Code Examples -->
+  <div class="examples-section">
+    <h2 class="section-title">Code Examples</h2>
+    
+    <div class="language-selector">
+      <label for="language-select">Language:</label>
+      <select id="language-select" [(ngModel)]="selectedLanguage" (change)="onLanguageChange()">
+        <option *ngFor="let lang of languages" [value]="lang.value">{{ lang.label }}</option>
+      </select>
+    </div>
+    
+    <div class="examples-grid" *ngIf="codeExamples">
+      <div class="example-card" *ngFor="let example of codeExamples | keyvalue">
+        <div class="example-header">
+          <h3>{{ $any(example.key) | titlecase }}</h3>
+          <button class="copy-button" (click)="copyToClipboard($any(example.value))">
+            <i class="material-icons">content_copy</i>
+          </button>
+        </div>
+        <div class="code-block">
+          <pre><code>{{ example.value }}</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SDKs -->
+  <div class="sdks-section" *ngIf="sdks">
+    <h2 class="section-title">Official SDKs</h2>
+    
+    <div class="sdks-grid">
+      <div class="sdk-card" *ngFor="let sdk of sdks | keyvalue">
+        <div class="sdk-header">
+          <div class="sdk-icon">
+            <i class="material-icons">{{ getSdkIcon($any(sdk.key)) }}</i>
+          </div>
+          <div class="sdk-info">
+            <h3>{{ $any(sdk.value).name }}</h3>
+            <span class="sdk-version">v{{ $any(sdk.value).version }}</span>
+          </div>
+        </div>
+        <p class="sdk-description">{{ $any(sdk.value).description }}</p>
+        
+        <div class="sdk-installation" *ngIf="$any(sdk.value).installation">
+          <h4>Installation:</h4>
+          <div class="code-block">
+            <code>{{ $any(sdk.value).installation }}</code>
+            <button class="copy-button" (click)="copyToClipboard($any(sdk.value).installation)">
+              <i class="material-icons">content_copy</i>
+            </button>
+          </div>
+        </div>
+        
+        <div class="sdk-links">
+          <a [href]="$any(sdk.value).documentation" target="_blank" class="sdk-link" *ngIf="$any(sdk.value).documentation">
+            <i class="material-icons">description</i>
+            Documentation
+          </a>
+          <a [href]="$any(sdk.value).repository" target="_blank" class="sdk-link" *ngIf="$any(sdk.value).repository">
+            <i class="material-icons">code</i>
+            Repository
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Service Status -->
+  <div class="services-section" *ngIf="apiStatus?.services">
+    <h2 class="section-title">Service Status</h2>
+    
+    <div class="services-grid">
+      <div class="service-item" *ngFor="let service of apiStatus.services | keyvalue">
+        <div class="service-name">{{ $any(service.key) | titlecase }}</div>
+        <div class="service-status" [class]="getStatusColor($any(service.value))">
+          <i class="material-icons">{{ service.value === 'operational' ? 'check_circle' : 'error' }}</i>
+          {{ $any(service.value) | titlecase }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

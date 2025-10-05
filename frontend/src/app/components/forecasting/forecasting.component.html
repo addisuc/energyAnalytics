@@ -1,0 +1,216 @@
+<div class="forecasting-container">
+  <div class="forecasting-header">
+    <h1 class="page-title">Energy Forecasting</h1>
+    <p class="page-subtitle">Advanced predictions for demand, generation, and pricing</p>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls-section">
+    <div class="control-group">
+      <label for="forecast-type-select">Forecast Type:</label>
+      <select id="forecast-type-select" [(ngModel)]="selectedForecastType" (change)="onForecastTypeChange(selectedForecastType)">
+        <option *ngFor="let type of forecastTypes" [value]="type.value">{{ type.label }}</option>
+      </select>
+    </div>
+    
+    <div class="control-group">
+      <label for="region-select">Region:</label>
+      <select id="region-select" [(ngModel)]="selectedRegion" (change)="onRegionChange(selectedRegion)">
+        <option *ngFor="let region of regions" [value]="region.value">{{ region.label }}</option>
+      </select>
+    </div>
+    
+    <div class="control-group">
+      <label for="period-select">Forecast Period:</label>
+      <select id="period-select" [(ngModel)]="selectedPeriod" (change)="onPeriodChange(selectedPeriod)">
+        <option *ngFor="let period of periods" [value]="period.value">{{ period.label }}</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p>Generating forecast...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="error-container">
+    <div class="error-icon">
+      <i class="material-icons">error_outline</i>
+    </div>
+    <h3>Unable to Generate Forecast</h3>
+    <p>{{ error }}</p>
+    <button class="retry-button" (click)="loadForecast()">
+      <i class="material-icons">refresh</i>
+      Try Again
+    </button>
+  </div>
+
+  <!-- Comprehensive Forecast -->
+  <div *ngIf="forecastData && selectedForecastType === 'comprehensive' && !isLoading" class="comprehensive-forecast">
+    <div class="forecast-overview">
+      <div class="overview-card">
+        <h3>Forecast Overview</h3>
+        <p><strong>Region:</strong> {{ selectedRegion | titlecase }}</p>
+        <p><strong>Period:</strong> {{ forecastData.forecastPeriod }}</p>
+        <p><strong>Generated:</strong> {{ forecastData.generatedAt | date:'short' }}</p>
+      </div>
+    </div>
+
+    <!-- Risk Assessment -->
+    <div class="risk-assessment" *ngIf="forecastData.riskAssessment">
+      <h2 class="section-title">Risk Assessment</h2>
+      <div class="risk-grid">
+        <div class="risk-item">
+          <span class="risk-label">Supply Risk:</span>
+          <span class="risk-value" [class]="getRiskColor(forecastData.riskAssessment.supplyRisk)">
+            {{ forecastData.riskAssessment.supplyRisk }}
+          </span>
+        </div>
+        <div class="risk-item">
+          <span class="risk-label">Demand Risk:</span>
+          <span class="risk-value" [class]="getRiskColor(forecastData.riskAssessment.demandRisk)">
+            {{ forecastData.riskAssessment.demandRisk }}
+          </span>
+        </div>
+        <div class="risk-item">
+          <span class="risk-label">Price Risk:</span>
+          <span class="risk-value" [class]="getRiskColor(forecastData.riskAssessment.priceRisk)">
+            {{ forecastData.riskAssessment.priceRisk }}
+          </span>
+        </div>
+        <div class="risk-item">
+          <span class="risk-label">Overall Risk:</span>
+          <span class="risk-value" [class]="getRiskColor(forecastData.riskAssessment.overallRisk)">
+            {{ forecastData.riskAssessment.overallRisk }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Demand Forecast -->
+  <div *ngIf="forecastData && (selectedForecastType === 'demand' || selectedForecastType === 'comprehensive') && !isLoading" class="demand-forecast">
+    <h2 class="section-title">Demand Forecast</h2>
+    <div class="forecast-summary" *ngIf="forecastData.demandForecast?.summary || forecastData.summary">
+      <div class="summary-cards">
+        <div class="summary-card">
+          <div class="card-icon">
+            <i class="material-icons">show_chart</i>
+          </div>
+          <div class="card-content">
+            <h4>Average Demand</h4>
+            <div class="card-value">{{ formatDemand((forecastData.demandForecast?.summary || forecastData.summary)?.averageDemand) }}</div>
+          </div>
+        </div>
+        <div class="summary-card">
+          <div class="card-icon">
+            <i class="material-icons">trending_up</i>
+          </div>
+          <div class="card-content">
+            <h4>Peak Demand</h4>
+            <div class="card-value">{{ formatDemand((forecastData.demandForecast?.summary || forecastData.summary)?.peakDemand) }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Generation Forecast -->
+  <div *ngIf="forecastData && (selectedForecastType === 'generation' || selectedForecastType === 'comprehensive') && !isLoading" class="generation-forecast">
+    <h2 class="section-title">Generation Forecast</h2>
+    <div class="generation-summary" *ngIf="forecastData.generationForecast?.totalPredictedGeneration || forecastData.totalPredictedGeneration">
+      <div class="summary-cards">
+        <div class="summary-card">
+          <div class="card-icon">
+            <i class="material-icons">wb_sunny</i>
+          </div>
+          <div class="card-content">
+            <h4>Total Generation</h4>
+            <div class="card-value">{{ formatGeneration(forecastData.generationForecast?.totalPredictedGeneration || forecastData.totalPredictedGeneration) }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="weather-factors" *ngIf="forecastData.generationForecast?.weatherFactors || forecastData.weatherFactors">
+      <h3>Weather Factors</h3>
+      <div class="factors-grid">
+        <div class="factor-item" *ngIf="(forecastData.generationForecast?.weatherFactors || forecastData.weatherFactors)?.expectedSunnyDays">
+          <span class="factor-label">Sunny Days:</span>
+          <span class="factor-value">{{ (forecastData.generationForecast?.weatherFactors || forecastData.weatherFactors).expectedSunnyDays }}</span>
+        </div>
+        <div class="factor-item" *ngIf="(forecastData.generationForecast?.weatherFactors || forecastData.weatherFactors)?.expectedWindyDays">
+          <span class="factor-label">Windy Days:</span>
+          <span class="factor-value">{{ (forecastData.generationForecast?.weatherFactors || forecastData.weatherFactors).expectedWindyDays }}</span>
+        </div>
+        <div class="factor-item" *ngIf="(forecastData.generationForecast?.weatherFactors || forecastData.weatherFactors)?.averageCloudCover">
+          <span class="factor-label">Cloud Cover:</span>
+          <span class="factor-value">{{ (forecastData.generationForecast?.weatherFactors || forecastData.weatherFactors).averageCloudCover }}%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Price Forecast -->
+  <div *ngIf="forecastData && (selectedForecastType === 'price' || selectedForecastType === 'comprehensive') && !isLoading" class="price-forecast">
+    <h2 class="section-title">Price Forecast</h2>
+    <div class="price-analysis" *ngIf="forecastData.priceForecast?.priceAnalysis || forecastData.priceAnalysis">
+      <div class="summary-cards">
+        <div class="summary-card">
+          <div class="card-icon">
+            <i class="material-icons">attach_money</i>
+          </div>
+          <div class="card-content">
+            <h4>Average Price</h4>
+            <div class="card-value">{{ formatPrice((forecastData.priceForecast?.priceAnalysis || forecastData.priceAnalysis)?.averagePrice) }}</div>
+          </div>
+        </div>
+        <div class="summary-card">
+          <div class="card-icon">
+            <i class="material-icons">timeline</i>
+          </div>
+          <div class="card-content">
+            <h4>Price Trend</h4>
+            <div class="card-value">{{ (forecastData.priceForecast?.priceAnalysis || forecastData.priceAnalysis)?.trend }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Daily Forecasts Table -->
+  <div *ngIf="forecastData && !isLoading" class="daily-forecasts">
+    <h2 class="section-title">Daily Forecasts</h2>
+    <div class="forecast-table">
+      <div class="table-header">
+        <div class="header-cell">Date</div>
+        <div class="header-cell" *ngIf="selectedForecastType === 'demand' || selectedForecastType === 'comprehensive'">Demand</div>
+        <div class="header-cell" *ngIf="selectedForecastType === 'generation' || selectedForecastType === 'comprehensive'">Generation</div>
+        <div class="header-cell" *ngIf="selectedForecastType === 'price' || selectedForecastType === 'comprehensive'">Price</div>
+        <div class="header-cell">Confidence</div>
+      </div>
+      
+      <!-- Show appropriate forecast data based on type -->
+      <div class="table-row" *ngFor="let forecast of getForecastRows(); let i = index" [class.even]="i % 2 === 0">
+        <div class="table-cell">{{ forecast.date | date:'MMM d' }}</div>
+        <div class="table-cell" *ngIf="selectedForecastType === 'demand' || selectedForecastType === 'comprehensive'">
+          {{ formatDemand(forecast.predictedDemand || 0) }}
+        </div>
+        <div class="table-cell" *ngIf="selectedForecastType === 'generation' || selectedForecastType === 'comprehensive'">
+          {{ formatGeneration(forecast.totalGeneration || 0) }}
+        </div>
+        <div class="table-cell" *ngIf="selectedForecastType === 'price' || selectedForecastType === 'comprehensive'">
+          {{ formatPrice(forecast.predictedPrice || 0) }}
+        </div>
+        <div class="table-cell">
+          <div class="confidence-bar">
+            <div class="confidence-fill" [style.width.%]="(forecast.confidence || 0) * 100"></div>
+            <span class="confidence-text">{{ ((forecast.confidence || 0) * 100).toFixed(0) }}%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

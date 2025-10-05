@@ -1,0 +1,22 @@
+// App Layout Styles - Production Ready
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
+.main-content {
+  flex: 1;
+  transition: margin-left 0.3s ease;
+  
+  @media (max-width: 768px) {
+    margin-left: 0;
+  }
+}
+
+// Global responsive utilities
+@media (max-width: 768px) {
+  .app-layout {
+    flex-direction: column;
+  }
+}

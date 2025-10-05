@@ -1,0 +1,156 @@
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background: linear-gradient(135deg, #74b9ff, #0984e3);
+  min-height: 100vh;
+}
+
+h1 {
+  color: white;
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 2.5rem;
+}
+
+.dashboard-card {
+  background: white;
+  border-radius: 10px;
+  padding: 30px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+h2 {
+  color: #2d3436;
+  margin: 0;
+}
+
+.btn {
+  background: #0984e3;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+
+  &:hover:not(:disabled) {
+    background: #74b9ff;
+  }
+
+  &:disabled {
+    background: #ddd;
+    cursor: not-allowed;
+  }
+}
+
+.logout-btn {
+  background: #e74c3c;
+  
+  &:hover {
+    background: #c0392b;
+  }
+}
+
+.search-section {
+  display: flex;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.city-input {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.weather-result {
+  margin-top: 20px;
+}
+
+.weather-info {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.weather-info h3 {
+  margin: 0 0 15px 0;
+  color: #2d3436;
+}
+
+.weather-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.temp-section {
+  text-align: center;
+  background: #f8fafc;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.temperature {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #1e40af;
+}
+
+.feels-like {
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.description-section {
+  background: #f8fafc;
+  padding: 15px;
+  border-radius: 8px;
+}
+
+.description {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 5px;
+}
+
+.humidity {
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.data-source {
+  font-size: 0.9em;
+  color: #666;
+  margin-top: 15px;
+  margin-bottom: 0;
+}
+
+.error {
+  color: #e74c3c;
+  margin: 15px 0;
+  padding: 10px;
+  background: #ffeaea;
+  border-radius: 5px;
+  border-left: 4px solid #e74c3c;
+}

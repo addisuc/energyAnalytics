@@ -1,0 +1,108 @@
+# Performance & Scalability Configuration
+
+spring:
+  # Database performance
+  datasource:
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      leak-detection-threshold: 60000
+      cache-prep-stmts: true
+      prep-stmt-cache-size: 250
+      prep-stmt-cache-sql-limit: 2048
+      use-server-prep-stmts: true
+  
+  # JPA performance
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 25
+          fetch_size: 50
+        order_inserts: true
+        order_updates: true
+        batch_versioned_data: true
+        generate_statistics: false
+        cache:
+          use_second_level_cache: true
+          use_query_cache: true
+          region:
+            factory_class: org.hibernate.cache.jcache.JCacheRegionFactory
+  
+  # Redis performance
+  redis:
+    lettuce:
+      pool:
+        max-active: 20
+        max-idle: 10
+        min-idle: 2
+        max-wait: 2000ms
+    timeout: 5000ms
+    
+  # Web performance
+  web:
+    resources:
+      cache:
+        cachecontrol:
+          max-age: 3600
+          cache-public: true
+    
+# Server performance
+server:
+  tomcat:
+    threads:
+      max: 200
+      min-spare: 10
+    connection-timeout: 20000
+    max-connections: 8192
+    accept-count: 100
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain,application/javascript,text/css
+    min-response-size: 1024
+
+# Caching configuration
+cache:
+  redis:
+    time-to-live: 1800 # 30 minutes
+    cache-null-values: false
+  
+  # Cache-specific TTLs
+  weather-data: 300    # 5 minutes
+  energy-analytics: 600 # 10 minutes
+  user-sessions: 1800   # 30 minutes
+  api-responses: 300    # 5 minutes
+
+# Performance monitoring
+management:
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5, 0.95, 0.99
+  endpoint:
+    metrics:
+      enabled: true
+
+# Async processing
+async:
+  core-pool-size: 5
+  max-pool-size: 20
+  queue-capacity: 100
+  thread-name-prefix: "async-"
+
+# Connection pooling for external APIs
+http-client:
+  connection-pool:
+    max-total: 100
+    max-per-route: 20
+    connection-timeout: 5000
+    socket-timeout: 10000
+    connection-request-timeout: 3000

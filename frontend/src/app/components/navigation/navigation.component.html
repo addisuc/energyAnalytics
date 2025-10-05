@@ -1,0 +1,156 @@
+<nav class="navigation-container">
+  <!-- Mobile Header -->
+  <div class="mobile-header md:hidden">
+    <div class="flex items-center justify-between p-4">
+      <h1 class="text-xl font-bold text-blue-600">Energy Analytics</h1>
+      <button 
+        (click)="toggleMenu()" 
+        class="menu-toggle"
+        [attr.aria-expanded]="!isMenuCollapsed"
+        aria-label="Toggle navigation menu">
+        <span class="hamburger-line" [class.active]="!isMenuCollapsed"></span>
+        <span class="hamburger-line" [class.active]="!isMenuCollapsed"></span>
+        <span class="hamburger-line" [class.active]="!isMenuCollapsed"></span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" [class.collapsed]="isMenuCollapsed">
+    <!-- Logo Section -->
+    <div class="logo-section">
+      <div class="logo-container">
+        <div class="logo-icon"></div>
+        <h1 class="logo-text">EnergyFlow</h1>
+      </div>
+      <span class="logo-subtitle">Analytics Platform</span>
+    </div>
+
+    <!-- User Info Section -->
+    <div class="user-section" *ngIf="currentUser">
+      <div class="user-avatar">
+        {{ currentUser.charAt(0).toUpperCase() }}
+      </div>
+      <div class="user-info">
+        <div class="user-name">{{ currentUser }}</div>
+        <div class="subscription-info">
+          <span class="plan-badge" [class]="userSubscription.plan.toLowerCase()">
+            {{ userSubscription.plan }}
+          </span>
+          <span [class]="getSubscriptionStatusColor()">
+            {{ userSubscription.status }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Usage Progress -->
+    <div class="usage-section" *ngIf="currentUser && userSubscription.plan !== 'ENTERPRISE'">
+      <div class="usage-header">
+        <span class="usage-label">API Usage</span>
+        <span class="usage-count">
+          {{ userSubscription.currentUsage }}/{{ userSubscription.usageLimit }}
+        </span>
+      </div>
+      <div class="progress-bar">
+        <div 
+          class="progress-fill" 
+          [style.width.%]="getUsagePercentage()"
+          [class.near-limit]="isUsageNearLimit()">
+        </div>
+      </div>
+    </div>
+
+    <!-- WebSocket Status -->
+    <div class="websocket-status" *ngIf="currentUser">
+      <div class="status-indicator">
+        <div class="status-dot" [class.connected]="isWebSocketConnected" [class.disconnected]="!isWebSocketConnected"></div>
+        <span class="status-text">{{ isWebSocketConnected ? 'Real-time Connected' : 'Connecting...' }}</span>
+      </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="nav-menu">
+      <ul class="nav-list">
+        <li *ngFor="let item of navigationItems" class="nav-item">
+          <!-- Main Navigation Item -->
+          <div class="nav-link-container">
+            <a 
+              *ngIf="hasAccess(item)"
+              [routerLink]="item.route" 
+              routerLinkActive="active"
+              class="nav-link"
+              (click)="navigateTo(item.route)">
+              <i class="nav-icon material-icons">{{ item.icon }}</i>
+              <span class="nav-label">{{ item.label }}</span>
+            </a>
+            
+            <!-- Locked Item (No Access) -->
+            <div 
+              *ngIf="!hasAccess(item)"
+              class="nav-link locked"
+              title="Upgrade subscription to access this feature">
+              <i class="nav-icon material-icons">{{ item.icon }}</i>
+              <span class="nav-label">{{ item.label }}</span>
+              <i class="lock-icon material-icons">lock</i>
+            </div>
+          </div>
+
+          <!-- Sub-navigation Items -->
+          <ul *ngIf="item.children && hasAccess(item)" class="sub-nav-list">
+            <li *ngFor="let child of item.children" class="sub-nav-item">
+              <a 
+                *ngIf="hasAccess(child)"
+                [routerLink]="child.route" 
+                routerLinkActive="active"
+                class="sub-nav-link"
+                (click)="navigateTo(child.route)">
+                <i class="sub-nav-icon material-icons">{{ child.icon }}</i>
+                <span class="sub-nav-label">{{ child.label }}</span>
+              </a>
+              
+              <div 
+                *ngIf="!hasAccess(child)"
+                class="sub-nav-link locked"
+                title="Upgrade to {{ child.requiredPlan?.join(' or ') }} plan">
+                <i class="sub-nav-icon material-icons">{{ child.icon }}</i>
+                <span class="sub-nav-label">{{ child.label }}</span>
+                <i class="lock-icon material-icons">lock</i>
+              </div>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Upgrade Section -->
+    <div class="upgrade-section" *ngIf="userSubscription.plan === 'FREE'">
+      <div class="upgrade-card">
+        <h3 class="upgrade-title">Unlock More Features</h3>
+        <p class="upgrade-description">
+          Upgrade to access advanced analytics, forecasting, and unlimited regions.
+        </p>
+        <button class="upgrade-button" routerLink="/dashboard/subscription">
+          Upgrade Now
+        </button>
+      </div>
+    </div>
+
+    <!-- Auth Section -->
+    <div class="auth-section">
+      <div *ngIf="currentUser">
+        <button class="logout-button" (click)="logout()">
+          <i class="material-icons">logout</i>
+          <span>Logout</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Overlay for mobile -->
+  <div 
+    class="mobile-overlay" 
+    [class.active]="!isMenuCollapsed"
+    (click)="toggleMenu()">
+  </div>
+</nav>

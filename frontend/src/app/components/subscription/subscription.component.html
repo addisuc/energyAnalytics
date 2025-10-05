@@ -1,0 +1,93 @@
+<div class="subscription-container">
+  <div class="subscription-header">
+    <h1 class="page-title">Subscription Plans</h1>
+    <p class="page-subtitle">Choose the plan that fits your energy analytics needs</p>
+  </div>
+
+  <!-- Current Subscription Status -->
+  <div class="current-subscription" *ngIf="currentSubscription">
+    <div class="status-card">
+      <div class="status-header">
+        <h2>Current Plan: {{ currentSubscription.plan }}</h2>
+        <span class="status-badge" [class]="currentSubscription.status.toLowerCase()">
+          {{ currentSubscription.status }}
+        </span>
+      </div>
+      <div class="usage-info">
+        <div class="usage-bar">
+          <div class="usage-fill" [style.width.%]="getUsagePercentage()"></div>
+        </div>
+        <div class="usage-text">
+          {{ currentSubscription.currentUsage }} / {{ currentSubscription.usageLimit === -1 ? 'Unlimited' : currentSubscription.usageLimit }} API calls
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Available Plans -->
+  <div class="plans-grid" *ngIf="availablePlans && availablePlans !== null">
+    <div class="plan-card" 
+         *ngFor="let plan of getOrderedPlans()" 
+         [class.current]="isCurrentPlan(plan.key)">
+      
+      <div class="plan-header">
+        <h3 class="plan-name">{{ plan.key }}</h3>
+        <div class="plan-price">
+          <span class="price">{{ formatPrice(plan.value.price) }}</span>
+          <span class="period" *ngIf="plan.value.price > 0">/month</span>
+        </div>
+      </div>
+
+      <div class="plan-features">
+        <div class="feature">
+          <i class="material-icons">api</i>
+          <span>{{ plan.value.apiLimit === 'unlimited' ? 'Unlimited' : plan.value.apiLimit }} API calls/month</span>
+        </div>
+        <div class="feature">
+          <i class="material-icons">location_on</i>
+          <span>{{ plan.value.regions === 'unlimited' ? 'All' : plan.value.regions }} regions</span>
+        </div>
+        <div class="feature" *ngIf="plan.key !== 'FREE'">
+          <i class="material-icons">support</i>
+          <span>Email support</span>
+        </div>
+        <div class="feature" *ngIf="plan.key === 'PRO' || plan.key === 'ENTERPRISE'">
+          <i class="material-icons">notifications</i>
+          <span>Real-time alerts</span>
+        </div>
+        <div class="feature" *ngIf="plan.key === 'ENTERPRISE'">
+          <i class="material-icons">code</i>
+          <span>API access</span>
+        </div>
+      </div>
+
+      <div class="plan-action">
+        <button class="plan-button" 
+                [disabled]="isCurrentPlan(plan.key) && plan.key !== 'ENTERPRISE'"
+                [class.current]="isCurrentPlan(plan.key)"
+                (click)="handlePlanAction(plan.key)">
+          {{ getButtonText(plan.key) }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p class="loading-text">Loading subscription plans...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !availablePlans" class="error-container">
+    <div class="error-icon">
+      <i class="material-icons">error_outline</i>
+    </div>
+    <h3 class="error-title">Unable to Load Plans</h3>
+    <p class="error-message">{{ error }}</p>
+    <button class="retry-button" (click)="loadAvailablePlans()">
+      <i class="material-icons">refresh</i>
+      Try Again
+    </button>
+  </div>
+</div>

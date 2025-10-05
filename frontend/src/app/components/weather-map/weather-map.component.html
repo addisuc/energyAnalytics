@@ -1,0 +1,13 @@
+<div class="map-container">
+  <h3>USA Weather Map</h3>
+  <p>Click on any city marker to get weather information:</p>
+  
+  <div *ngIf="loading" class="loading-indicator">
+    <p>Loading weather data for all states... ({{ loadedCities }}/{{ totalCities }})</p>
+    <div class="progress-bar">
+      <div class="progress-fill" [style.width.%]="(loadedCities / totalCities) * 100"></div>
+    </div>
+  </div>
+  
+  <div id="weather-map" class="weather-map"></div>
+</div>

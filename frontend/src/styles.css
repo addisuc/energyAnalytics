@@ -1,0 +1,24 @@
+/* Force remove all blue backgrounds */
+* {
+  background: white !important;
+}
+
+app-navigation,
+app-navigation *,
+.navigation-container,
+.navigation-container *,
+.app-layout,
+.app-layout *,
+.sidebar,
+.sidebar * {
+  background: white !important;
+}
+
+/* Keep only the sidebar green */
+.sidebar {
+  background: linear-gradient(180deg, #065f46 0%, #064e3b 100%) !important;
+}
+
+.sidebar * {
+  background: transparent !important;
+}

@@ -1,0 +1,56 @@
+<div class="container">
+  <h1>Weather Service</h1>
+  
+  <div class="dashboard-card">
+    <div class="header">
+      <h2>Weather Dashboard</h2>
+      <button class="btn logout-btn" (click)="logout()">Logout</button>
+    </div>
+    
+    <p>Welcome, {{ currentUser }}!</p>
+    
+    <div class="search-section">
+      <input 
+        type="text" 
+        [(ngModel)]="cityInput" 
+        placeholder="Enter city name"
+        (keydown)="onEnterKey($event)"
+        class="city-input"
+      />
+      <button class="btn search-btn" (click)="searchWeather()" [disabled]="loading">
+        {{ loading ? 'Loading...' : 'Get Weather' }}
+      </button>
+    </div>
+    
+    <app-weather-map></app-weather-map>
+    
+    <div *ngIf="weatherData" class="weather-result">
+      <div class="weather-info">
+        <h3>{{ weatherData.city }}</h3>
+        
+        <div class="weather-grid">
+          <div class="temp-section">
+            <div class="temperature">{{ convertToFahrenheit(weatherData.temperature) }}°F</div>
+            <div class="feels-like">Feels like {{ convertToFahrenheit(weatherData.feelsLike) }}°F</div>
+          </div>
+          
+          <div class="description-section">
+            <div class="description">{{ weatherData.description | titlecase }}</div>
+            <div class="humidity">Humidity: {{ weatherData.humidity }}%</div>
+          </div>
+        </div>
+        
+        <div class="details-grid">
+          <div><strong>Wind:</strong> {{ getWindDirection(weatherData.windDirection) }} {{ convertWindSpeed(weatherData.windSpeed) }} mph</div>
+          <div><strong>Pressure:</strong> {{ convertPressure(weatherData.pressure) }} inHg</div>
+          <div *ngIf="weatherData.visibility"><strong>Visibility:</strong> {{ convertVisibility(weatherData.visibility) }} miles</div>
+          <div><strong>UV Index:</strong> {{ getRandomUVIndex() }}</div>
+        </div>
+        
+        <p class="data-source">Live weather data from backend API</p>
+      </div>
+    </div>
+    
+    <div *ngIf="errorMessage" class="error">{{ errorMessage }}</div>
+  </div>
+</div>
