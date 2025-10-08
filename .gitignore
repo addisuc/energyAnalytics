@@ -1,5 +1,5 @@
 # Build outputs
-target/
+target/*
 *.jar
 *.war
 
@@ -29,3 +29,5 @@ Thumbs.db
 .env
 terraform.tfvars
 /target/
+**/target/
+**/cheap-deploy/.terraform/
