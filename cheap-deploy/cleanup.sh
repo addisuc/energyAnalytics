@@ -51,6 +51,10 @@ fi
 echo "💥 Destroying all infrastructure..."
 terraform destroy -auto-approve
 
+# Clean up any remaining key pairs manually
+echo "🔑 Cleaning up SSH key pairs..."
+aws ec2 describe-key-pairs --query 'KeyPairs[?starts_with(KeyName, `energyflow-dev-key`)].KeyName' --output text | xargs -r -n1 aws ec2 delete-key-pair --key-name 2>/dev/null || true
+
 # Clean up local Terraform state
 echo "🗑️  Cleaning up local files..."
 rm -f terraform.tfstate*

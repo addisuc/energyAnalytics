@@ -93,9 +93,10 @@ cd /home/ec2-user/app
 echo "🚀 Starting EnergyFlow Analytics..."
 
 # Set environment variables
-export OPENWEATHER_API_KEY=${openweather_api_key}
-export DB_PASSWORD=weather_pass_prod
-export SPRING_PROFILES_ACTIVE=prod
+echo "export OPENWEATHER_API_KEY=${openweather_api_key}" > .env
+echo "export DB_PASSWORD=weather_pass_prod" >> .env
+echo "export SPRING_PROFILES_ACTIVE=prod" >> .env
+source .env
 
 # Start services with Docker Compose
 echo "🐳 Starting all services..."

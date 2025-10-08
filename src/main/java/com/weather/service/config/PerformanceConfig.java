@@ -51,6 +51,11 @@ public class PerformanceConfig {
     }
 
     @Bean
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
+        name = "spring.cache.type", 
+        havingValue = "redis", 
+        matchIfMissing = true
+    )
     public CacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
         RedisCacheManager.RedisCacheManagerBuilder builder = RedisCacheManager
             .builder(redisConnectionFactory)
@@ -64,6 +69,11 @@ public class PerformanceConfig {
     }
 
     @Bean
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
+        name = "spring.cache.type", 
+        havingValue = "redis", 
+        matchIfMissing = true
+    )
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);

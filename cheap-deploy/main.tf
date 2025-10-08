@@ -101,10 +101,16 @@ resource "aws_security_group" "web" {
   }
 }
 
-# Key Pair
+# Key Pair with random suffix to avoid conflicts
 resource "aws_key_pair" "main" {
-  key_name   = "energyflow-dev-key"
+  key_name   = "energyflow-dev-key-${random_string.key_suffix.result}"
   public_key = file("~/.ssh/id_rsa.pub")
+}
+
+resource "random_string" "key_suffix" {
+  length  = 4
+  special = false
+  upper   = false
 }
 
 # Using dynamic public IP to save $3.65/month
@@ -142,10 +148,21 @@ resource "aws_instance" "backend" {
     }
   }
   
-  # Upload application files
+  # Create and upload application archive
+  provisioner "local-exec" {
+    command = <<-EOT
+      cd ..
+      tar -czf /tmp/energyflow-app.tar.gz \
+        docker-compose.prod.yml \
+        nginx.conf \
+        target/weather-service-1.0.0.jar \
+        frontend/dist/frontend/browser
+    EOT
+  }
+  
   provisioner "file" {
-    source      = "../docker-compose.prod.yml"
-    destination = "/home/ec2-user/app/docker-compose.prod.yml"
+    source      = "/tmp/energyflow-app.tar.gz"
+    destination = "/home/ec2-user/app.tar.gz"
     
     connection {
       type        = "ssh"
@@ -155,9 +172,13 @@ resource "aws_instance" "backend" {
     }
   }
   
-  provisioner "file" {
-    source      = "../nginx.conf"
-    destination = "/home/ec2-user/app/nginx.conf"
+  provisioner "remote-exec" {
+    inline = [
+      "cd /home/ec2-user/app",
+      "tar -xzf ../app.tar.gz --strip-components=0",
+      "mv frontend/dist/frontend/browser frontend/",
+      "rm -f ../app.tar.gz"
+    ]
     
     connection {
       type        = "ssh"
@@ -167,36 +188,26 @@ resource "aws_instance" "backend" {
     }
   }
   
-  provisioner "file" {
-    source      = "../target/weather-service-1.0.0.jar"
-    destination = "/home/ec2-user/app/weather-service-1.0.0.jar"
-    
-    connection {
-      type        = "ssh"
-      user        = "ec2-user"
-      private_key = file("~/.ssh/id_rsa")
-      host        = self.public_ip
-    }
-  }
-  
-  provisioner "file" {
-    source      = "../frontend/dist/"
-    destination = "/home/ec2-user/app/frontend/"
-    
-    connection {
-      type        = "ssh"
-      user        = "ec2-user"
-      private_key = file("~/.ssh/id_rsa")
-      host        = self.public_ip
-    }
-  }
-  
-  # Deploy application
+  # Deploy application with proper environment and paths
   provisioner "remote-exec" {
     inline = [
       "cd /home/ec2-user/app",
       "chmod +x deploy.sh",
-      "./deploy.sh"
+      "export OPENWEATHER_API_KEY=${var.openweather_api_key}",
+      "./deploy.sh",
+      "sleep 30",
+      "export OPENWEATHER_API_KEY=${var.openweather_api_key}",
+      "docker-compose -f docker-compose.prod.yml down",
+      "docker-compose -f docker-compose.prod.yml up -d",
+      "sleep 60",
+      "docker exec timescaledb psql -U weather_user -d weatherdb -c \"CREATE EXTENSION IF NOT EXISTS timescaledb;\"",
+      "docker exec timescaledb psql -U weather_user -d weatherdb -c \"CREATE TABLE IF NOT EXISTS users (id BIGSERIAL PRIMARY KEY, username VARCHAR(255) UNIQUE NOT NULL, email VARCHAR(255) UNIQUE NOT NULL, password VARCHAR(255) NOT NULL, role VARCHAR(50) DEFAULT 'USER', first_name VARCHAR(255), last_name VARCHAR(255), company_name VARCHAR(255), job_title VARCHAR(255), phone_number VARCHAR(255), subscription_plan VARCHAR(50) DEFAULT 'FREE');\"",
+      "docker exec timescaledb psql -U weather_user -d weatherdb -c \"CREATE TABLE IF NOT EXISTS subscriptions (id BIGSERIAL PRIMARY KEY, user_id BIGINT REFERENCES users(id), plan VARCHAR(50) NOT NULL, status VARCHAR(50) NOT NULL, start_date TIMESTAMP, usage_limit INTEGER, current_usage INTEGER DEFAULT 0);\"",
+      "docker exec timescaledb psql -U weather_user -d weatherdb -c \"INSERT INTO users (username, email, password, first_name, last_name, role, subscription_plan) VALUES ('demo', 'demo@weather.com', '$2a$10$N9qo8uLOickgx2ZMRZoMye/Eo9hfBVV2AfVufF7mXSuHxspnsgTzu', 'Demo', 'User', 'USER', 'PRO') ON CONFLICT (email) DO NOTHING;\"",
+      "docker exec timescaledb psql -U weather_user -d weatherdb -c \"INSERT INTO subscriptions (user_id, plan, status, start_date, usage_limit, current_usage) SELECT id, 'PRO', 'ACTIVE', NOW(), -1, 0 FROM users WHERE email = 'demo@weather.com' ON CONFLICT (user_id) DO NOTHING;\"",
+      "docker-compose -f docker-compose.prod.yml restart weather-app",
+      "sleep 30",
+      "docker ps"
     ]
     
     connection {

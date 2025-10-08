@@ -30,14 +30,12 @@ public class DataInitializer implements CommandLineRunner {
     
     @Override
     public void run(String... args) throws Exception {
-        // Always create demo user for development
+        log.info("Starting data initialization...");
+        
+        // Always create demo user
         initializeDemoUser();
         
-        if (!appConfig.getData().isInitialize()) {
-            log.info("Data initialization disabled");
-            return;
-        }
-        
+        // Always initialize sample data for demo
         if (energyDataRepository.count() == 0) {
             log.info("Initializing sample energy data...");
             initializeEnergyData();
@@ -52,28 +50,34 @@ public class DataInitializer implements CommandLineRunner {
     }
     
     private void initializeDemoUser() {
-        if (userRepository.findByEmail("demo@weather.com").isEmpty()) {
-            User demoUser = new User();
-            demoUser.setUsername("demo");
-            demoUser.setEmail("demo@weather.com");
-            demoUser.setPassword("demo");
-            demoUser.setFirstName("Demo");
-            demoUser.setLastName("User");
-            demoUser.setRole("USER");
-            demoUser.setSubscriptionPlan("PRO");
-            demoUser = userRepository.save(demoUser);
-            
-            // Create PRO subscription
-            Subscription subscription = new Subscription();
-            subscription.setUser(demoUser);
-            subscription.setPlan(Subscription.SubscriptionPlan.PRO);
-            subscription.setStatus(Subscription.SubscriptionStatus.ACTIVE);
-            subscription.setStartDate(LocalDateTime.now());
-            subscription.setUsageLimit(-1); // Unlimited for PRO
-            subscription.setCurrentUsage(0);
-            subscriptionRepository.save(subscription);
-            
-            log.info("Demo user created with PRO subscription");
+        try {
+            if (userRepository.findByEmail("demo@weather.com").isEmpty()) {
+                User demoUser = new User();
+                demoUser.setUsername("demo");
+                demoUser.setEmail("demo@weather.com");
+                demoUser.setPassword("$2a$10$N9qo8uLOickgx2ZMRZoMye/Eo9hfBVV2AfVufF7mXSuHxspnsgTzu"); // BCrypt hash for "demo"
+                demoUser.setFirstName("Demo");
+                demoUser.setLastName("User");
+                demoUser.setRole("USER");
+                demoUser.setSubscriptionPlan("PRO");
+                demoUser = userRepository.save(demoUser);
+                
+                // Create PRO subscription
+                Subscription subscription = new Subscription();
+                subscription.setUser(demoUser);
+                subscription.setPlan(Subscription.SubscriptionPlan.PRO);
+                subscription.setStatus(Subscription.SubscriptionStatus.ACTIVE);
+                subscription.setStartDate(LocalDateTime.now());
+                subscription.setUsageLimit(-1); // Unlimited for PRO
+                subscription.setCurrentUsage(0);
+                subscriptionRepository.save(subscription);
+                
+                log.info("Demo user created with PRO subscription");
+            } else {
+                log.info("Demo user already exists");
+            }
+        } catch (Exception e) {
+            log.error("Failed to create demo user: {}", e.getMessage());
         }
     }
     
