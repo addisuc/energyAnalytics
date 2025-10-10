@@ -31,18 +31,15 @@ public class SecurityConfig {
             .headers(headers -> headers.frameOptions().disable());
         
         if (appConfig.getSecurity().isEnabled()) {
-            // Production security - require authentication
+            // Production security - analytics endpoints public, others require auth
             http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/actuator/health", "/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**", "/error").permitAll()
+                .requestMatchers("/api/auth/**", "/api/analytics/**", "/actuator/health", "/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**", "/error").permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         } else {
-            // Development security - allow all requests
-            http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/error").permitAll()
-                .anyRequest().permitAll()
-            );
+            // Development mode - allow all requests
+            http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
         }
         
         return http.build();

@@ -1,46 +1,76 @@
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 10px;
   background: linear-gradient(135deg, #74b9ff, #0984e3);
   min-height: 100vh;
+  
+  @media (min-width: 768px) {
+    padding: 20px;
+  }
 }
 
 h1 {
   color: white;
   text-align: center;
-  margin-bottom: 30px;
-  font-size: 2.5rem;
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+  
+  @media (min-width: 768px) {
+    margin-bottom: 30px;
+    font-size: 2.5rem;
+  }
 }
 
 .dashboard-card {
   background: white;
   border-radius: 10px;
-  padding: 30px;
+  padding: 15px;
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  
+  @media (min-width: 768px) {
+    padding: 30px;
+  }
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+  gap: 10px;
+  
+  @media (min-width: 768px) {
+    margin-bottom: 20px;
+    flex-wrap: nowrap;
+  }
 }
 
 h2 {
   color: #2d3436;
   margin: 0;
+  font-size: 1.3rem;
+  
+  @media (min-width: 768px) {
+    font-size: 1.5rem;
+  }
 }
 
 .btn {
   background: #0984e3;
   color: white;
   border: none;
-  padding: 12px 24px;
+  padding: 10px 16px;
   border-radius: 5px;
   cursor: pointer;
   font-size: 14px;
   transition: background-color 0.3s;
+  white-space: nowrap;
+
+  @media (min-width: 768px) {
+    padding: 12px 24px;
+  }
 
   &:hover:not(:disabled) {
     background: #74b9ff;
@@ -62,16 +92,28 @@ h2 {
 
 .search-section {
   display: flex;
-  gap: 10px;
-  margin: 20px 0;
+  gap: 8px;
+  margin: 15px 0;
+  flex-wrap: wrap;
+  
+  @media (min-width: 768px) {
+    gap: 10px;
+    margin: 20px 0;
+    flex-wrap: nowrap;
+  }
 }
 
 .city-input {
   flex: 1;
-  padding: 12px;
+  min-width: 200px;
+  padding: 10px;
   border: 1px solid #ddd;
   border-radius: 5px;
   font-size: 16px;
+  
+  @media (min-width: 768px) {
+    padding: 12px;
+  }
 }
 
 .weather-result {
@@ -80,8 +122,12 @@ h2 {
 
 .weather-info {
   background: #f8f9fa;
-  padding: 20px;
+  padding: 15px;
   border-radius: 8px;
+  
+  @media (min-width: 768px) {
+    padding: 20px;
+  }
 }
 
 .weather-info h3 {
@@ -91,22 +137,35 @@ h2 {
 
 .weather-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
+  grid-template-columns: 1fr;
+  gap: 10px;
   margin-bottom: 15px;
+  
+  @media (min-width: 480px) {
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+  }
 }
 
 .temp-section {
   text-align: center;
   background: #f8fafc;
-  padding: 15px;
+  padding: 12px;
   border-radius: 8px;
+  
+  @media (min-width: 768px) {
+    padding: 15px;
+  }
 }
 
 .temperature {
-  font-size: 2rem;
+  font-size: 1.6rem;
   font-weight: bold;
   color: #1e40af;
+  
+  @media (min-width: 768px) {
+    font-size: 2rem;
+  }
 }
 
 .feels-like {
@@ -116,8 +175,12 @@ h2 {
 
 .description-section {
   background: #f8fafc;
-  padding: 15px;
+  padding: 12px;
   border-radius: 8px;
+  
+  @media (min-width: 768px) {
+    padding: 15px;
+  }
 }
 
 .description {
@@ -134,9 +197,15 @@ h2 {
 
 .details-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  font-size: 14px;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  font-size: 13px;
+  
+  @media (min-width: 480px) {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    font-size: 14px;
+  }
 }
 
 .data-source {

@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: energyflow-analytics
+    name: weather-service
   
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://timescaledb:5432/weatherdb}

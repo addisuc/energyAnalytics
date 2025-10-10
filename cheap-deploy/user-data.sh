@@ -54,6 +54,9 @@ services:
       - SPRING_DATASOURCE_PASSWORD=weather_pass_prod
       - SPRING_REDIS_HOST=redis
       - OPENWEATHER_API_KEY=${openweather_api_key}
+      - JWT_SECRET=myVerySecretKeyForJWTTokenGeneration123456789
+      - SECURITY_ENABLED=true
+      - DATA_INITIALIZE=true
     depends_on:
       - timescaledb
       - redis
@@ -94,7 +97,11 @@ echo "🚀 Starting EnergyFlow Analytics..."
 
 # Set environment variables
 echo "export OPENWEATHER_API_KEY=${openweather_api_key}" > .env
-echo "export DB_PASSWORD=weather_pass_prod" >> .env
+echo "export SPRING_DATASOURCE_URL=jdbc:postgresql://timescaledb:5432/weatherdb" >> .env
+echo "export SPRING_DATASOURCE_USERNAME=weather_user" >> .env
+echo "export SPRING_DATASOURCE_PASSWORD=weather_pass_prod" >> .env
+echo "export SPRING_REDIS_HOST=redis" >> .env
+echo "export JWT_SECRET=myVerySecretKeyForJWTTokenGeneration123456789" >> .env
 echo "export SPRING_PROFILES_ACTIVE=prod" >> .env
 source .env
 

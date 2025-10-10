@@ -3,20 +3,34 @@
   display: flex;
   min-height: 100vh;
   background: #f8fafc;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
 }
 
 .main-content {
   flex: 1;
   transition: margin-left 0.3s ease;
+  width: 100%;
+  overflow-x: hidden;
   
   @media (max-width: 768px) {
     margin-left: 0;
+    padding-top: 60px; // Account for mobile header
+  }
+  
+  @media (min-width: 769px) {
+    margin-left: 220px; // Sidebar width
   }
 }
 
-// Global responsive utilities
+// Ensure full width on mobile
 @media (max-width: 768px) {
-  .app-layout {
-    flex-direction: column;
+  .container {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 10px !important;
   }
 }

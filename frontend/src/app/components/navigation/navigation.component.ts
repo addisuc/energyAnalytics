@@ -26,7 +26,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
     currentUsage: 0
   };
   
-  isMenuCollapsed = false;
+  isMenuCollapsed = true;
   isWebSocketConnected = false;
   
   navigationItems: NavigationItem[] = [
@@ -102,6 +102,8 @@ export class NavigationComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.initializeUserData();
     this.setupWebSocketStatus();
+    this.checkMobileView();
+    this.setupResizeListener();
   }
 
   ngOnDestroy(): void {
@@ -171,11 +173,18 @@ export class NavigationComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Close mobile menu when clicking overlay
+   */
+  closeMobileMenu(): void {
+    this.isMenuCollapsed = true;
+  }
+
+  /**
    * Navigate to route and close mobile menu
    */
   navigateTo(route: string): void {
     this.router.navigate([route]);
-    this.isMenuCollapsed = false;
+    this.isMenuCollapsed = true;
   }
 
   /**
@@ -235,5 +244,21 @@ export class NavigationComponent implements OnInit, OnDestroy {
           this.isWebSocketConnected = false;
         }
       });
+  }
+
+  /**
+   * Check if current view is mobile
+   */
+  private checkMobileView(): void {
+    if (typeof window !== 'undefined') {
+      this.isMenuCollapsed = true;
+    }
+  }
+
+  /**
+   * Setup window resize listener
+   */
+  private setupResizeListener(): void {
+    // Menu can be toggled on all screen sizes now
   }
 }

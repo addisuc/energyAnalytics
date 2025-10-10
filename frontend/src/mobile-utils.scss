@@ -1,0 +1,127 @@
+/* Mobile Utility Classes */
+
+/* Responsive spacing utilities */
+.p-mobile {
+  padding: 0.75rem;
+}
+
+.p-desktop {
+  padding: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .p-mobile {
+    padding: 1.5rem;
+  }
+}
+
+/* Responsive text utilities */
+.text-mobile {
+  font-size: 0.875rem;
+}
+
+.text-desktop {
+  font-size: 1rem;
+}
+
+@media (min-width: 768px) {
+  .text-mobile {
+    font-size: 1rem;
+  }
+}
+
+/* Mobile-first grid utilities */
+.grid-mobile {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+.grid-mobile-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+@media (min-width: 480px) {
+  .grid-mobile-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 768px) {
+  .grid-mobile {
+    gap: 1rem;
+  }
+  
+  .grid-mobile-2 {
+    gap: 1rem;
+  }
+}
+
+/* Touch-friendly buttons */
+.btn-mobile {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border-radius: 0.375rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Responsive containers */
+.container-mobile {
+  width: 100%;
+  max-width: 100%;
+  padding: 0 1rem;
+  margin: 0 auto;
+}
+
+@media (min-width: 768px) {
+  .container-mobile {
+    padding: 0 1.5rem;
+  }
+}
+
+/* Hide/show utilities for different screen sizes */
+.mobile-only {
+  display: block;
+}
+
+.desktop-only {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .mobile-only {
+    display: none;
+  }
+  
+  .desktop-only {
+    display: block;
+  }
+}
+
+/* Responsive flex utilities */
+.flex-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .flex-mobile {
+    flex-direction: row;
+    gap: 1rem;
+  }
+}
+
+/* Safe area padding for mobile devices */
+@supports (padding: max(0px)) {
+  .safe-area-padding {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+}

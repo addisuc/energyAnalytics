@@ -38,29 +38,47 @@ import { AuthService } from '../../services/auth.service';
       flex: 1;
       background: white;
       overflow-y: auto;
+      margin-top: 60px;
     }
 
     .top-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 1rem 2rem;
+      padding: 0.75rem 1rem;
       background: white;
       border-bottom: 1px solid #e5e7eb;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      
+      display: none;
+    }
+    
+    @media (min-width: 768px) {
+      .top-header {
+        padding: 1rem 2rem;
+        flex-wrap: nowrap;
+      }
     }
 
     .welcome-text {
-      font-size: 1.125rem;
+      font-size: 1rem;
       font-weight: 600;
       color: #374151;
+    }
+    
+    @media (min-width: 768px) {
+      .welcome-text {
+        font-size: 1.125rem;
+      }
     }
 
     .signout-btn {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem 1rem;
+      gap: 0.25rem;
+      padding: 0.5rem 0.75rem;
       background: #ef4444;
       color: white;
       border: none;
@@ -68,6 +86,16 @@ import { AuthService } from '../../services/auth.service';
       font-weight: 500;
       cursor: pointer;
       transition: background-color 0.2s;
+      font-size: 0.875rem;
+      min-height: 44px;
+    }
+    
+    @media (min-width: 768px) {
+      .signout-btn {
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+      }
     }
 
     .signout-btn:hover {

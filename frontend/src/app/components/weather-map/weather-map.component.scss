@@ -1,9 +1,14 @@
 .map-container {
-  margin: 20px 0;
-  padding: 20px;
+  margin: 15px 0;
+  padding: 15px;
   background: white;
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  
+  @media (min-width: 768px) {
+    margin: 20px 0;
+    padding: 20px;
+  }
 }
 
 .map-container h3 {
@@ -17,10 +22,18 @@
 }
 
 .weather-map {
-  height: 500px;
+  height: 300px;
   width: 100%;
   border-radius: 10px;
   border: 1px solid #ddd;
+  
+  @media (min-width: 768px) {
+    height: 400px;
+  }
+  
+  @media (min-width: 1024px) {
+    height: 500px;
+  }
 }
 
 .loading-indicator {

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Menu Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f3f4f6;
+        }
+        
+        .mobile-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            z-index: 1002;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .menu-toggle {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            width: 28px;
+            height: 28px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: background-color 0.2s ease;
+        }
+        
+        .menu-toggle:hover {
+            background: #f3f4f6;
+        }
+        
+        .hamburger-line {
+            width: 100%;
+            height: 3px;
+            background: #374151;
+            transition: all 0.3s ease;
+            transform-origin: center;
+            border-radius: 2px;
+        }
+        
+        .hamburger-line.active:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+        }
+        
+        .hamburger-line.active:nth-child(2) {
+            opacity: 0;
+        }
+        
+        .hamburger-line.active:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -6px);
+        }
+        
+        .sidebar {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            width: 100%;
+            max-width: 320px;
+            height: calc(100vh - 60px);
+            background: linear-gradient(180deg, #065f46 0%, #064e3b 100%);
+            color: white;
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+            z-index: 1001;
+        }
+        
+        .sidebar.open {
+            transform: translateX(0);
+        }
+        
+        .mobile-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .mobile-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .main-content {
+            margin-top: 60px;
+            padding: 2rem;
+        }
+        
+        .nav-item {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        @media (min-width: 769px) {
+            .mobile-header {
+                display: none;
+            }
+            
+            .sidebar {
+                position: relative;
+                transform: none;
+                width: 220px;
+                top: 0;
+                height: 100vh;
+            }
+            
+            .mobile-overlay {
+                display: none;
+            }
+            
+            .main-content {
+                margin-top: 0;
+                margin-left: 220px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="mobile-header">
+        <h1>Energy Analytics</h1>
+        <button class="menu-toggle" onclick="toggleMenu()">
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+            <span class="hamburger-line"></span>
+        </button>
+    </div>
+    
+    <div class="sidebar" id="sidebar">
+        <div class="nav-item">Energy Analytics</div>
+        <div class="nav-item">Weather Correlation</div>
+        <div class="nav-item">Predictive Analytics</div>
+        <div class="nav-item">Historical Analytics</div>
+        <div class="nav-item">Energy Forecasting</div>
+        <div class="nav-item">Alert Management</div>
+        <div class="nav-item">Reports & Export</div>
+        <div class="nav-item">Advanced Visualizations</div>
+        <div class="nav-item">API Documentation</div>
+        <div class="nav-item">Subscription & Billing</div>
+    </div>
+    
+    <div class="mobile-overlay" id="overlay" onclick="closeMenu()"></div>
+    
+    <div class="main-content">
+        <h2>Main Content Area</h2>
+        <p>This is where the main content would appear. On mobile, the green menu panel should be hidden by default and can be toggled using the hamburger menu button in the top-left corner.</p>
+        <p>Try resizing your browser window or viewing on a mobile device to test the functionality.</p>
+    </div>
+    
+    <script>
+        let isMenuOpen = false;
+        
+        function toggleMenu() {
+            isMenuOpen = !isMenuOpen;
+            updateMenuState();
+        }
+        
+        function closeMenu() {
+            isMenuOpen = false;
+            updateMenuState();
+        }
+        
+        function updateMenuState() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            const hamburgerLines = document.querySelectorAll('.hamburger-line');
+            
+            if (isMenuOpen) {
+                sidebar.classList.add('open');
+                overlay.classList.add('active');
+                hamburgerLines.forEach(line => line.classList.add('active'));
+            } else {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('active');
+                hamburgerLines.forEach(line => line.classList.remove('active'));
+            }
+        }
+        
+        // Close menu when window is resized to desktop size
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                isMenuOpen = false;
+                updateMenuState();
+            }
+        });
+        
+        // Initialize menu state based on screen size
+        if (window.innerWidth <= 768) {
+            isMenuOpen = false;
+            updateMenuState();
+        }
+    </script>
+</body>
+</html>
